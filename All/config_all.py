@@ -69,9 +69,6 @@ UPDATE_INTERVAL = 10
 # Timeout für Anfragen an FEMS in Sekunden
 REQUEST_TIMEOUT = 10
 
-# Web Monitor Port
-WEB_MONITOR_PORT = 5001
-
 # =============================================================================
 # WICHTIGE HINWEISE:
 # =============================================================================
@@ -95,14 +92,3 @@ WEB_MONITOR_PORT = 5001
 #    - Die REST-API im FEMS aktiviert ist
 #
 # =============================================================================
-
-## Konfiguration für die GUI
-
-showGui = True
-showDashboard = False
-showDetail = True
-showAP = True
-showFlowBottom = False
-
-webGui = True
-localGui = True
