@@ -7,7 +7,7 @@ import datetime
 import aiohttp
 import logging
 
-import config_all
+import All.config_all as config_all
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ async def fetch_fems(fems_conf, index: int):
 
     ip = fems_conf.get("ip")
     port = fems_conf.get("port", 80)
-    username = fems_conf.get("username", "x")
+    username = fems_conf.get("username", "Gast")
     password = fems_conf.get("password", "user")
     base = f"http://{ip}:{port}/rest/api"
 
