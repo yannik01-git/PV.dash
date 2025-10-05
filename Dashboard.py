@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 # https://docs.streamlit.io/develop/api-reference 
 # "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-from All import data_fetch as data
+from All import data_collector as data
 
 st.title("PV-Dashboard")
 
