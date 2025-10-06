@@ -12,8 +12,15 @@ A simple Streamlit app template for you to modify!
    $ pip install -r requirements.txt
    ```
 
-2. Run the app
+2. Install all needed components
+   
+   ```
+   $ pip install streamlit-autorefresh
+   $ pip install streamlit
+   ```
+
+3. Run the app
 
    ```
-   $ streamlit run streamlit_app.py
+   $ streamlit run Dashboard.py
    ```

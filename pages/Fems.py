@@ -23,8 +23,7 @@ if right.button("AP-Dashboard", width="stretch"):
 st_autorefresh(interval=5 * 1000, limit=None, key="auto")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
-try:
-    response = requests.get('http://192.168.188.66:80', timeout=5) # Timeout hinzufügen
+if data.fems_online:
     # Erfolgreiche Anfrage wird hier behandelt
     # --------------------------------------------------------
     # FEMS Batterie anzeigen
@@ -34,6 +33,10 @@ try:
         st.metric("Batteriebeladung", f"{data.battery_power.json().get('value', 0)} W")
     elif data.battery_power.json().get('value', 0) > 0:
         st.metric("Batterieentladung", f"{data.battery_power.json().get('value', 0)} W")
+
+    # --------------------------------------------------------
+    # Fems Erzeugung
+    st.metric("Erzeugung", f"{data.production_power.json().get('value', 0)}")
 
     # --------------------------------------------------------
     # Fems Netzbezug/Netzeinspeisung anzeigen
@@ -68,7 +71,6 @@ try:
     else:
         st.metric("FEMS Grid Mode", "❓ Unbekannt")
 
-except requests.exceptions.RequestException as e:
-    print(f"Fehler bei der Anfrage: {e}")
+else:
     # Hier können Sie auch Fehler wie Timeout behandeln
     st.metric("Status", "❓ Keine Verbindung")
