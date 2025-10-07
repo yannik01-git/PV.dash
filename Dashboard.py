@@ -22,29 +22,36 @@ if right.button("AP-Dashboard", width="stretch"):
 st_autorefresh(interval=5 * 1000, key="datarefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
-fems = data.fetch_fems_data()
-garage = data.fetch_garage_data()
-spielvilla = data.fetch_spielvilla_data()
-combined = data.fetch_combined_data()
-
 left, middle, right = st.columns(3)
 prod_matrix = pd.DataFrame({
-    "Fems": [f"{fems['production_power']} W"],
-    "Balkon": [f"{fems['balkon']} W"],
-    "Garage": [f"{garage['ap']} W"],
-    "Spielvilla": [f"{spielvilla['ap']} W"]
+    "Fems": [f"{data.production_power.json().get('value', 0)} W"],
+    "Balkon": [f"{data.fems_balkon} W"],
+    "Garage": [f"{data.garage_produktion} W"],
+    "Spielvilla": [f"{data.spielvilla_produktion} W"]
 },
 index=["Produktion"],
 )
 middle.table(prod_matrix)
 
 left, middle, right = st.columns(3)
-left.button("Netz",width="stretch")
-left.button(f"{fems['grid_power']} W", width="stretch")
+if data.grid_power.json().get('value', 0) < 0:
+    left.button("Netzeinspeisung",width="stretch")
+    left.button(f"{data.grid_power.json().get('value', 0)} W", width="stretch")
+elif data.grid_power.json().get('value', 0) >= 0:
+    left.button("Netzbezug",width="stretch")
+    left.button(f"{data.grid_power.json().get('value', 0)} W", width="stretch")
 
 right.button("Verbrauch", width="stretch")
-right.button(f"{combined['consumption_total']} W", width="stretch")
+right.button(f"{data.haus_verbrauch}" "W", width="stretch")
 
 left, middle, right = st.columns(3)
-middle.button("Batterie", width="stretch")
-middle.button(f"{fems['charging_state']} W", width="stretch")
+if data.battery_power.json().get('value', 0) < 0:
+    middle.button("Batterieentladung", width="stretch")
+    middle.button(f"{-data.battery_power.json().get('value', 0)} W", width="stretch")
+elif data.battery_power.json().get('value', 0) > 0:
+    middle.button("Batteriebeladung", width="stretch")
+    middle.button(f"{data.battery_power.json().get('value', 0)} W", width="stretch")
+elif data.battery_power.json().get('value', 0) == 0:
+    middle.button("Batterie neutral", width="stretch")
+    middle.button(f"{data.battery_power.json().get('value', 0)} W", width="stretch")
+middle.button(f"{data.charging_state.json().get('value', 0)} %", width="stretch")

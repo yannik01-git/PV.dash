@@ -1,12 +1,12 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
-from All import data_collector_alt as data
+from All import data_collector_old as data
 import requests
 
 st.set_page_config(page_title="FEMS Monitor", layout="wide")
 
-st.title("🔋 FEMS Live-Daten alte Version")
+st.title("🔋 FEMS Live-Daten")
 
 
 left, middle, right = st.columns(3)
@@ -23,55 +23,39 @@ if right.button("AP-Dashboard", width="stretch"):
 st_autorefresh(interval=5 * 1000, limit=None, key="auto")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
-if data.fems_online:
+# --------------------------------------------------------
+# Daten neu abrufen
+# --------------------------------------------------------
+fems = data.fetch_fems_data()
+
+if fems["online"]:
     left, right = st.columns(2)
-    # Erfolgreiche Anfrage wird hier behandelt
-    # --------------------------------------------------------
-    # FEMS Batterie anzeigen
-    left.metric("Ladezustand", f"{data.charging_state.json().get('value', 0)} %")
+    left.metric("Ladezustand", f"{fems['charging_state']} %")
 
-    if data.battery_power.json().get('value', 0) <= 0:
-        left.metric("Batteriebeladung", f"{data.battery_power.json().get('value', 0)} W")
-    elif data.battery_power.json().get('value', 0) > 0:
-        left.metric("Batterieentladung", f"{data.battery_power.json().get('value', 0)} W")
-
-    # --------------------------------------------------------
-    # Fems Erzeugung
-    left.metric("Erzeugung", f"{data.production_power.json().get('value', 0)}")
-
-    # --------------------------------------------------------
-    # Fems Netzbezug/Netzeinspeisung anzeigen
-    if data.grid_power.json().get('value', 0) >= 0:
-        left.metric("Netzeinspeisung", f"{data.grid_power.json().get('value', 0)} W")
-    elif data.grid_power.json().get('value', 0) < 0:
-        left.metric("Netzbezug", f"{-data.grid_power.json().get('value', 0)} W")
-
-    # --------------------------------------------------------
-    # FEMS Verbrauch anzeigen
-    left.metric("Verbrauch", f"{data.consumption.json().get('value', 0)} W")
-
-    # --------------------------------------------------------
-    # Fems Zustand anzeigen
-    if data.status.json().get('value') == 0:
-        right.metric("FEMS Status", "✅ OK")
-    elif data.status.json().get('value') ==1:
-        right.metric("FEMS Status", "⚠️ Info")
-    elif data.status.json().get('value') ==2:
-        right.metric("FEMS Status", "❗ Warnung")
-    elif data.status.json().get('value') ==3:
-        right.metric("FEMS Status", "⛔ Fehler")
+    power = fems["battery_power"]
+    if power <= 0:
+        left.metric("Batteriebeladung", f"{power} W")
     else:
-        right.metric("FEMS Status","❓ Unbekannt")
+        left.metric("Batterieentladung", f"{power} W")
 
-    # --------------------------------------------------------
-    # Fems Grid Mode anzeigen
-    if data.grid_mode.json().get('value') ==1:
-        right.metric("FEMS Grid Mode","🔌 Netzbetrieb")
-    elif data.grid_mode.json().get('value') ==2:
-        right.metric("FEMS Grid Mode", "🔋 Inselbetrieb")
+    left.metric("Erzeugung", f"{fems['production_power']} W")
+    left.metric("Balkon", f"{fems['balkon']} W")
+
+    grid = fems["grid_power"]
+    if grid <= 0:
+        left.metric("Netzeinspeisung", f"{-grid} W")
     else:
-        right.metric("FEMS Grid Mode", "❓ Unbekannt")
+        left.metric("Netzbezug", f"{grid} W")
+
+    left.metric("Verbrauch", f"{fems['consumption']} W")
+
+    # Status anzeigen
+    status_map = {0: "✅ OK", 1: "⚠️ Info", 2: "❗ Warnung", 3: "⛔ Fehler"}
+    right.metric("FEMS Status", status_map.get(fems["status"], "❓ Unbekannt"))
+
+    # Grid Mode anzeigen
+    mode_map = {1: "🔌 Netzbetrieb", 2: "🔋 Inselbetrieb"}
+    right.metric("FEMS Grid Mode", mode_map.get(fems["grid_mode"], "❓ Unbekannt"))
 
 else:
-    # Hier können Sie auch Fehler wie Timeout behandeln
     st.metric("Status", "❓ Keine Verbindung")
