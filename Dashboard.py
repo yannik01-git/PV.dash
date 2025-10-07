@@ -42,8 +42,6 @@ left, middle, right = st.columns(3)
 left.button("Netz",width="stretch")
 left.button(f"{fems['grid_power']} W", width="stretch")
 
-middle.badge("+", color = "green", width="stretch")
-
 right.button("Verbrauch", width="stretch")
 right.button(f"{combined['consumption_total']} W", width="stretch")
 
