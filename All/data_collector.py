@@ -1,192 +1,148 @@
 import requests
 
+# --------------------------------------------------------
+# 🔧 IP-Adressen & Authentifizierung
+# --------------------------------------------------------
+FEMS_IP = "192.168.188.66"
+GARAGE_IP = "192.168.188.63"
+SPIELVILLA_IP = "192.168.188.122"
 
-# FEMS API URL Abfrage der Daten
-try:
-    response = requests.get('http://192.168.188.66:80', timeout=5) # Timeout hinzufügen
-    # Erfolgreiche Anfrage wird hier behandelt
+USER = "Gast"
+PASSWORD = "user"
 
-    fems_online = True
-
-    user = 'Gast'
-    password = 'user'
-
-    session = requests.Session()
-    session.auth = (user, password)
-
-    # SOC abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/EssSoc'
-    charging_state = session.get(url)
-    charging_state.raise_for_status()
-
-    # Produktion abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/ProductionActivePower'
-    production_power = session.get(url)
-    production_power.raise_for_status()
-
-    # Netzbezug abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/GridActivePower'
-    grid_power = session.get(url)
-    grid_power.raise_for_status()
-
-    # Batterieleistung abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/EssActivePower'
-    battery_power = session.get(url)
-    battery_power.raise_for_status()
-
-    # Verbrauch abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/ConsumptionActivePower'
-    consumption = session.get(url)
-    consumption.raise_for_status()
-
-    # FEMS Status abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/State'
-    status = session.get(url)
-    status.raise_for_status()
-
-    # FEMS Grid Mode abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/GridMode'
-    grid_mode = session.get(url)
-    grid_mode.raise_for_status()
-
-except requests.exceptions.RequestException as e:
-    fems_online = False
-    print(f"Fehler bei der Anfrage: {e}")
-    # Hier können Sie auch Fehler wie Timeout behandeln
+# Gemeinsame Session
+session = requests.Session()
+session.auth = (USER, PASSWORD)
 
 # --------------------------------------------------------
-# AP-Garage 
+# 🧩 Hilfsfunktionen
 # --------------------------------------------------------
-# PV-Leistung abfragen
-try:
-    response = requests.get('http://192.168.188.63:8050', timeout=5) # Timeout hinzufügen
-    # Erfolgreiche Anfrage wird hier behandelt
-    garage_online = True
-    # Leistungsdaten abfragen
-    url = 'http://192.168.188.63:8050/get_output_data'
-    garage_ap = session.get(url)
-    garage_ap.raise_for_status()
+def safe_get_json(url, timeout=3):
+    """Sichere JSON-Abfrage, gibt {} bei Fehler zurück"""
+    try:
+        r = session.get(url, timeout=timeout)
+        r.raise_for_status()
+        return r.json()
+    except Exception:
+        return {}
 
-    # Leistungsgrenze setzen
-    url = 'http://192.168.188.63:8050/setMaxPower?p=600'
-    set_power_garage = session.get(url)
-    set_power_garage.raise_for_status()
-
-    #Leistungsgrenze abfragen
-    url = 'http://192.168.188.63:8050/getMaxPower'
-    get_power_garage = session.get(url)
-    get_power_garage.raise_for_status()
-
-except requests.exceptions.RequestException as e:
-    garage_online = False
-    print(f"Fehler bei der Anfrage: {e}")
-    # Hier können Sie auch Fehler wie Timeout behandeln
+def safe_get_value(url, timeout=3):
+    """Holt einen einzelnen JSON-Wert, gibt None bei Fehler zurück"""
+    try:
+        r = session.get(url, timeout=timeout)
+        r.raise_for_status()
+        return r.json().get("value", None)
+    except Exception:
+        return None
 
 
 # --------------------------------------------------------
-# AP-Spielvilla 
+# 🔋 FEMS-Daten
 # --------------------------------------------------------
-# PV-Leistung abfragen
-try:
-    response = requests.get('http://192.168.188.122:8050', timeout=5) # Timeout hinzufügen
-    # Erfolgreiche Anfrage wird hier behandelt
-    garage_online = True
-    # Leistungsdaten abfragen
-    url = 'http://192.168.188.122:8050/get_output_data'
-    spielvilla_ap = session.get(url)
-    spielvilla_ap.raise_for_status()
+def fetch_fems_data():
+    """Holt aktuelle FEMS-Daten und gibt sie als Dict zurück"""
+    data = {"online": False}
 
-    # Leistungsgrenze setzen
-    url = 'http://192.168.188.122:8050/setMaxPower'
-    set_power_spielvilla = session.get(url)
-    set_power_spielvilla.raise_for_status()
+    try:
+        response = requests.get(f"http://{FEMS_IP}:80", timeout=3)
+        response.raise_for_status()
+        data["online"] = True
+            # Werte abfragen
+        prefix = f"http://{USER}:{PASSWORD}@{FEMS_IP}:80/rest/channel/_sum/"
+        data["charging_state"] = safe_get_value(prefix + "EssSoc")
+        data["production_power"] = safe_get_value(prefix + "ProductionActivePower")
+        data["grid_power"] = safe_get_value(prefix + "GridActivePower")
+        data["battery_power"] = safe_get_value(prefix + "EssActivePower")
+        data["consumption"] = safe_get_value(prefix + "ConsumptionActivePower")
+        data["status"] = safe_get_value(prefix + "State")
+        data["grid_mode"] = safe_get_value(prefix + "GridMode")
 
-    #Leistungsgrenze abfragen
-    url = 'http://192.168.188.122:8050/getMaxPower'
-    get_power_spielvilla = session.get(url)
-    get_power_spielvilla.raise_for_status()
+        if data["consumption"] < 0:
+            data["balkon"] = abs(data["consumption"])
+        else:
+            data["balkon"] = 0
+        return data
+    except requests.exceptions.RequestException:
+        return data
 
-except requests.exceptions.RequestException as e:
-    spielvilla_online = False
-    print(f"Fehler bei der Anfrage: {e}")
-    # Hier können Sie auch Fehler wie Timeout behandeln
+
 
 
 # --------------------------------------------------------
-# Gesamtdaten rechnen
+# ☀️ AP-Garage
 # --------------------------------------------------------
-if spielvilla_online and garage_online:
-    garage_produktion = garage_ap.json().get('p1', 0) + garage_ap.json().get('p2', 0)
-    spielvilla_produktion = spielvilla_ap.json().get('p1', 0) + spielvilla_ap.json().get('p2', 0)
-    fems_balkon = 0
-elif spielvilla_online and not garage_online:
-    garage_produktion = 0
-    spielvilla_produktion = spielvilla_ap.json().get('p1', 0) + spielvilla_ap.json().get('p2', 0)
-    fems_balkon = 0
-elif not spielvilla_online and garage_online:
-    garage_produktion = garage_ap.json().get('p1', 0) + garage_ap.json().get('p2', 0)
-    spielvilla_produktion = 0
-    fems_balkon = 0
-else:
-    garage_produktion = 0
-    spielvilla_produktion = 0
+def fetch_garage_data():
+    """Holt aktuelle Daten von der Garage-AP"""
+    data = {"online": False}
 
-ap_produktion = garage_produktion + spielvilla_produktion
-if  fems_online:
-    haus_verbrauch = consumption.json().get('value', 0) - ap_produktion
-    pv_produktion = ap_produktion + production_power.json().get('value', 0)
-    if  haus_verbrauch < 0 and fems_online:
-        haus_verbrauch = 0
-        fems_balkon = abs(consumption.json().get('value', 0))
-else:
-    haus_verbrauch = 0
-    pv_produktion = ap_produktion
-    fems_balkon = 0
+    try:
+        response = requests.get(f"http://{GARAGE_IP}:8050", timeout=2)
+        response.raise_for_status()
+        data["online"] = True
+        data["ap"] = safe_get_json(f"http://{GARAGE_IP}:8050/get_output_data")
+        data["max_power"] = safe_get_json(f"http://{GARAGE_IP}:8050/getMaxPower")
+        return data
+    except requests.exceptions.RequestException:
+        data["online"] = False
+        data["ap"] = 0
+        data["max_power"] = 0   
+        return data
+
+    
 
 
-
-# ---------------------------------------------------------
-# AP-Regelung erstellen
 # --------------------------------------------------------
+# 🏠 AP-Spielvilla
+# --------------------------------------------------------
+def fetch_spielvilla_data():
+    """Holt aktuelle Daten von der Spielvilla-AP"""
+    data = {"online": False}
 
-min_power_ap = 30
-max_power_ap = 800
+    try:
+        response = requests.get(f"http://{SPIELVILLA_IP}:8050", timeout=2)
+        response.raise_for_status()
+        data["online"] = True
+        data["ap"] = safe_get_json(f"http://{SPIELVILLA_IP}:8050/get_output_data")
+        data["max_power"] = safe_get_json(f"http://{SPIELVILLA_IP}:8050/getMaxPower")
+        return data
+    except requests.exceptions.RequestException:
+        data["online"] = False
+        data["ap"] = 0
+        data["max_power"] = 0
+        return data
 
-# AP-Regelung nach unten 
-# Beide Module online
-if spielvilla_online and garage_online:
-    if  ap_produktion > 800:
-        diff_produktion = ap_produktion - max_power_ap
-        if garage_produktion >= spielvilla_produktion and garage_produktion != min_power_ap:
-            set_power_garage = get_power_garage.json().get('maxPower', 0) - diff_produktion
-            if set_power_garage < min_power_ap:
-                set_power_garage = min_power_ap
-        elif garage_produktion >= spielvilla_produktion and garage_produktion == min_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
-
-        elif garage_produktion < spielvilla_produktion and spielvilla_produktion != min_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
-            if set_power_spielvilla < min_power_ap:
-                set_power_spielvilla = min_power_ap
-        elif garage_produktion < spielvilla_produktion and spielvilla_produktion == min_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
-
-    # AP-Regelung nach oben
-    # Beide Module online
-    elif ap_produktion < 750:
-        diff_produktion =  max_power_ap - ap_produktion
-        if garage_produktion <= spielvilla_produktion and garage_produktion != max_power_ap:
-            set_power_garage = get_power_garage.json().get('maxPower', 0) + diff_produktion
-            if set_power_garage > max_power_ap:
-                set_power_garage = max_power_ap
-        elif garage_produktion <= spielvilla_produktion and garage_produktion == max_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
-
-        elif garage_produktion > spielvilla_produktion and spielvilla_produktion != max_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
-            if set_power_spielvilla > max_power_ap:
-                set_power_spielvilla = max_power_ap
-        elif garage_produktion > spielvilla_produktion and spielvilla_produktion == max_power_ap:
-            set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
+    
 
 
+# --------------------------------------------------------
+# 🧮 Kombinierte Gesamtwerte (optional)
+# --------------------------------------------------------
+def fetch_combined_data():
+    """
+    Holt alle drei Datenquellen und berechnet kombinierte Kennzahlen.
+    Gibt ein Dict zurück:
+        {
+            "fems": {...},
+            "garage": {...},
+            "spielvilla": {...},
+            "pv_total": ...,
+            "consumption_total": ...,
+        }
+    """
+    fems = fetch_fems_data()
+    garage = fetch_garage_data()
+    spielvilla = fetch_spielvilla_data()
+
+    pv_garage = garage["ap"].get("p1", 0) + garage["ap"].get("p2", 0) if garage["online"] else 0
+    pv_spielvilla = spielvilla["ap"].get("p1", 0) + spielvilla["ap"].get("p2", 0) if spielvilla["online"] else 0
+    pv_total = pv_garage + pv_spielvilla
+
+    consumption_total = (fems["consumption"]-pv_total or 0) if fems["online"] else 0
+    total_data = {
+        "fems": fems,
+        "garage": garage,
+        "spielvilla": spielvilla,
+        "pv_total": pv_total,
+        "consumption_total": consumption_total,
+    }
+    return total_data

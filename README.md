@@ -17,6 +17,7 @@ A simple Streamlit app template for you to modify!
    ```
    $ pip install streamlit-autorefresh
    $ pip install streamlit
+   $ pip install plotly
    ```
 
 3. Run the app
