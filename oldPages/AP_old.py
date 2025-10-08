@@ -1,7 +1,7 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
-from All import data_collector_old as data
+from oldPages import data_collector_old as data
 
 st.set_page_config(page_title="AP Monitor", layout="wide")
 st.title("🔌 AP-Dashboard")

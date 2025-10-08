@@ -11,6 +11,8 @@ password = 'user'
 
 session = requests.Session()
 session.auth = (user, password)
+
+
 try:
     response = requests.get('http://192.168.188.66:80', timeout=5) # Timeout hinzufügen
     # Erfolgreiche Anfrage wird hier behandelt
@@ -101,13 +103,19 @@ try:
     get_power_garage = session.get(url)
     get_power_garage.raise_for_status()
 
+    garage_data = garage_ap.json().get("data", {})  # Unterobjekt "data"
+    garage_limit = get_power_garage.json().get("data", {})
+
     # Daten aus der Garagen Historie
     # über e1 & e2 von getOutputData
+
 
 except requests.exceptions.RequestException as e:
     garage_online = False
     print(f"Fehler bei der Anfrage: {e}")
     # Hier können Sie auch Fehler wie Timeout behandeln
+
+
 
 
 # --------------------------------------------------------
@@ -133,6 +141,9 @@ try:
     get_power_spielvilla = session.get(url)
     get_power_spielvilla.raise_for_status()
 
+    spielvilla_data = spielvilla_ap.json().get("data",{})
+    spielvilla_limit = get_power_spielvilla.json().get("data",{})
+
     # Daten aus der Spielvilla Historie
     # über e1 & e2 von getOutputData
 
@@ -142,19 +153,21 @@ except requests.exceptions.RequestException as e:
     # Hier können Sie auch Fehler wie Timeout behandeln
 
 
+
+
 # --------------------------------------------------------
 # Gesamtdaten rechnen
 # --------------------------------------------------------
 if spielvilla_online and garage_online:
-    garage_produktion = garage_ap.json().get('p1', 0) + garage_ap.json().get('p2', 0)
-    spielvilla_produktion = spielvilla_ap.json().get('p1', 0) + spielvilla_ap.json().get('p2', 0)
+    garage_produktion = garage_data.json().get('p1', 0) + garage_data.json().get('p2', 0)
+    spielvilla_produktion = spielvilla_data.json().get('p1', 0) + spielvilla_data.json().get('p2', 0)
     fems_balkon = 0
 elif spielvilla_online and not garage_online:
     garage_produktion = 0
-    spielvilla_produktion = spielvilla_ap.json().get('p1', 0) + spielvilla_ap.json().get('p2', 0)
+    spielvilla_produktion = spielvilla_data.json().get('p1', 0) + spielvilla_data.json().get('p2', 0)
     fems_balkon = 0
 elif not spielvilla_online and garage_online:
-    garage_produktion = garage_ap.json().get('p1', 0) + garage_ap.json().get('p2', 0)
+    garage_produktion = garage_data.json().get('p1', 0) + garage_data.json().get('p2', 0)
     spielvilla_produktion = 0
     fems_balkon = 0
 else:
@@ -194,35 +207,34 @@ if spielvilla_online and garage_online:
         if  ap_produktion > 800:
             diff_produktion = ap_produktion - max_power_ap
             if garage_produktion >= spielvilla_produktion and garage_produktion != min_power_ap:
-                set_power_garage = get_power_garage.json().get('maxPower', 0) - diff_produktion
+                set_power_garage = garage_limit.json().get('maxPower', 0) - diff_produktion
                 if set_power_garage < min_power_ap:
                     set_power_garage = min_power_ap
             elif garage_produktion >= spielvilla_produktion and garage_produktion == min_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
 
             elif garage_produktion < spielvilla_produktion and spielvilla_produktion != min_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
                 if set_power_spielvilla < min_power_ap:
                     set_power_spielvilla = min_power_ap
             elif garage_produktion < spielvilla_produktion and spielvilla_produktion == min_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
 
         # AP-Regelung nach oben
         # Beide Module online
         elif ap_produktion < 750:
             diff_produktion =  max_power_ap - ap_produktion
             if garage_produktion <= spielvilla_produktion and garage_produktion != max_power_ap:
-                set_power_garage = get_power_garage.json().get('maxPower', 0) + diff_produktion
+                set_power_garage = garage_limit.json().get('maxPower', 0) + diff_produktion
                 if set_power_garage > max_power_ap:
                     set_power_garage = max_power_ap
             elif garage_produktion <= spielvilla_produktion and garage_produktion == max_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
 
             elif garage_produktion > spielvilla_produktion and spielvilla_produktion != max_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
                 if set_power_spielvilla > max_power_ap:
                     set_power_spielvilla = max_power_ap
             elif garage_produktion > spielvilla_produktion and spielvilla_produktion == max_power_ap:
-                set_power_spielvilla = get_power_spielvilla.json().get('maxPower', 0) + diff_produktion
-
+                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
 

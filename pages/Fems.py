@@ -6,7 +6,7 @@ import requests
 
 st.set_page_config(page_title="FEMS Monitor", layout="wide")
 
-st.title("🔋 FEMS Live-Daten alte Version")
+st.title("🔋 FEMS Live-Daten")
 
 
 left, middle, right = st.columns(3)

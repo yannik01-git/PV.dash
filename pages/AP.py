@@ -24,22 +24,23 @@ st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 left, middle, right = st.columns(3)
 if data.garage_online:
     # Erfolgreiche Anfrage wird hier behandelt
-    left.metric("PV-Leistung-1", f"{data.garage_ap.json().get('p1', 0)} W")
-    left.metric("PV-Leistung-2", f"{data.garage_ap.json().get('p2', 0)} W")
-    left.metric("Garage-Leistungsgrenze", f"{data.get_power_garage.json().get('maxPower', 0)} W")
+    left.metric("PV-Leistung-1", f"{data.garage_data.get('p1', 0.0)} W")
+    left.metric("PV-Leistung-2", f"{data.garage_data.get('p2', 0.0)} W")
+    left.metric("Garage-Leistungsgrenze", f"{data.garage_limit.get('maxPower', 0)} W")
 else:
     # Hier können Sie auch Fehler wie Timeout behandeln
     left.button("Garage", width="stretch")
     left.metric("Status", "❓ Keine Verbindung")
 
 
+
 # --------------------------------------------------------
 # AP-Spielvilla anzeigen
 if data.spielvilla_online:
     # Erfolgreiche Anfrage wird hier behandelt
-    right.metric("PV-Leistung-1", f"{data.spielvilla_ap.json().get('p1', 0)} W")
-    right.metric("PV-Leistung-2", f"{data.spielvilla_ap.json().get('p2', 0)} W")
-    right.metric("Spielvilla-Leistungsgrenze", f"{data.get_power_spielvilla.json().get('maxPower', 0)} W")
+    right.metric("PV-Leistung-1", f"{data.spielvilla_data.json().get('p1', 0)} W")
+    right.metric("PV-Leistung-2", f"{data.spielvilla_data.json().get('p2', 0)} W")
+    right.metric("Spielvilla-Leistungsgrenze", f"{data.spielvilla_limit.json().get('maxPower', 0)} W")
 else:
     # Hier können Sie auch Fehler wie Timeout behandeln
     right.button("Spielvilla", width="stretch")

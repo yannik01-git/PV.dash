@@ -36,7 +36,7 @@ middle.table(prod_matrix)
 left, middle, right = st.columns(3)
 if data.grid_power.json().get('value', 0) < 0:
     left.button("Netzeinspeisung",width="stretch")
-    left.button(f"{data.grid_power.json().get('value', 0)} W", width="stretch")
+    left.button(f"{-data.grid_power.json().get('value', 0)} W", width="stretch")
 elif data.grid_power.json().get('value', 0) >= 0:
     left.button("Netzbezug",width="stretch")
     left.button(f"{data.grid_power.json().get('value', 0)} W", width="stretch")
@@ -45,12 +45,12 @@ right.button("Verbrauch", width="stretch")
 right.button(f"{data.haus_verbrauch}" "W", width="stretch")
 
 left, middle, right = st.columns(3)
-if data.battery_power.json().get('value', 0) < 0:
+if data.battery_power.json().get('value', 0) > 0:
     middle.button("Batterieentladung", width="stretch")
-    middle.button(f"{-data.battery_power.json().get('value', 0)} W", width="stretch")
-elif data.battery_power.json().get('value', 0) > 0:
-    middle.button("Batteriebeladung", width="stretch")
     middle.button(f"{data.battery_power.json().get('value', 0)} W", width="stretch")
+elif data.battery_power.json().get('value', 0) < 0:
+    middle.button("Batteriebeladung", width="stretch")
+    middle.button(f"{-data.battery_power.json().get('value', 0)} W", width="stretch")
 elif data.battery_power.json().get('value', 0) == 0:
     middle.button("Batterie neutral", width="stretch")
     middle.button(f"{data.battery_power.json().get('value', 0)} W", width="stretch")
