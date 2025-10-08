@@ -52,6 +52,27 @@ try:
     grid_mode = session.get(url)
     grid_mode.raise_for_status()
 
+    # Fems Daten uas der Historie
+    # Netzbezug
+    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/GridBuyActiveEnergy'
+    grid_buy = session.get(url)
+    grid_buy.raise_for_status()
+
+    # Netzeinspesung
+    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/GridSellActiveEnergy'
+    grid_sell = session.get(url)
+    grid_sell.raise_for_status()
+
+    # Produktion
+    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/ProductionActiveEnergy'
+    full_production = session.get(url)
+    full_production.raise_for_status()
+
+    # Verbrauch
+    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/ConsumptionActiveEnergy'
+    full_consumption = session.get(url)
+    full_consumption.raise_for_status()
+
 except requests.exceptions.RequestException as e:
     fems_online = False
     print(f"Fehler bei der Anfrage: {e}")
@@ -66,7 +87,7 @@ try:
     # Erfolgreiche Anfrage wird hier behandelt
     garage_online = True
     # Leistungsdaten abfragen
-    url = 'http://192.168.188.63:8050/get_output_data'
+    url = 'http://192.168.188.63:8050/getOutputData'
     garage_ap = session.get(url)
     garage_ap.raise_for_status()
 
@@ -79,6 +100,9 @@ try:
     url = 'http://192.168.188.63:8050/getMaxPower'
     get_power_garage = session.get(url)
     get_power_garage.raise_for_status()
+
+    # Daten aus der Garagen Historie
+    # über e1 & e2 von getOutputData
 
 except requests.exceptions.RequestException as e:
     garage_online = False
@@ -95,7 +119,7 @@ try:
     # Erfolgreiche Anfrage wird hier behandelt
     garage_online = True
     # Leistungsdaten abfragen
-    url = 'http://192.168.188.122:8050/get_output_data'
+    url = 'http://192.168.188.122:8050/getOutputData'
     spielvilla_ap = session.get(url)
     spielvilla_ap.raise_for_status()
 
@@ -108,6 +132,9 @@ try:
     url = 'http://192.168.188.122:8050/getMaxPower'
     get_power_spielvilla = session.get(url)
     get_power_spielvilla.raise_for_status()
+
+    # Daten aus der Spielvilla Historie
+    # über e1 & e2 von getOutputData
 
 except requests.exceptions.RequestException as e:
     spielvilla_online = False
