@@ -78,36 +78,36 @@ def save_old_data():
     return erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug
 
 
+def save_day():
+    # Zeitfunktion zum Speichern
+    if last_save is not None and datetime.now().strftime("%Y_%m_%d") >= heute:
 
-# Zeitfunktion zum Speichern
-if last_save is not None and datetime.now().strftime("%Y_%m_%d") >= heute:
-
-    # Prüfen, ob die Datei existiert
-    if not os.path.exists(dateipfad):
-        # Datei erstellen (mit Kopfzeile als Beispiel)
-        with open(dateipfad, mode='w', newline='', encoding='utf-8') as csv_datei:
-            writer = csv.writer(csv_datei)
-            writer.writerow([
-                "Datum",
-                "Erzeugung Fems",
-                "Erzeugung Garage",
-                "Erzeugung Spielvilla",
-                "Verbrauch",
-                "Netzeinspeisung",
-                "Netzbezug"
-            ])
-        print(f"Neue CSV-Datei erstellt: {dateipfad}")
-    elif last_save is None:
-        last_save = jetzt
+        # Prüfen, ob die Datei existiert
+        if not os.path.exists(dateipfad):
+            # Datei erstellen (mit Kopfzeile als Beispiel)
+            with open(dateipfad, mode='w', newline='', encoding='utf-8') as csv_datei:
+                writer = csv.writer(csv_datei)
+                writer.writerow([
+                    "Datum",
+                    "Erzeugung Fems",
+                    "Erzeugung Garage",
+                    "Erzeugung Spielvilla",
+                    "Verbrauch",
+                    "Netzeinspeisung",
+                    "Netzbezug"
+                ])
+            print(f"Neue CSV-Datei erstellt: {dateipfad}")
+        elif last_save is None:
+            last_save = jetzt
+            save_old_data()
+        else:
+            print(f"Datei existiert bereits: {dateipfad}")
+        erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug = save_old_data()
+        erzeugung_garage = data.garage_ap.json().get('e1',0)+data.garage_ap.json().get('e2',0) - erzeugung_garage
+        erzeugung_spielvilla = data.spielvilla_ap.json().get('e1',0) + data.spielvilla_ap.json().get('e2',0) - erzeugung_spielvilla
+        erzeugung_fems = data.full_production.json().get('value',0) - erzeugung_fems
+        verbrauch = data.full_consumption.json().get('value',0) + erzeugung_garage + erzeugung_fems - verbrauch
+        netzeinspeisung = data.grid_sell.json().get('value',0) - netzeinspeisung
+        netzbezug = data.grid_buy.json().get('value',0) - netzbezug
+        save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug)
         save_old_data()
-    else:
-        print(f"Datei existiert bereits: {dateipfad}")
-    erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug = save_old_data()
-    erzeugung_garage = data.garage_ap.json().get('e1',0)+data.garage_ap.json().get('e2',0) - erzeugung_garage
-    erzeugung_spielvilla = data.spielvilla_ap.json().get('e1',0) + data.spielvilla_ap.json().get('e2',0) - erzeugung_spielvilla
-    erzeugung_fems = data.full_production.json().get('value',0) - erzeugung_fems
-    verbrauch = data.full_consumption.json().get('value',0) + erzeugung_garage + erzeugung_fems - verbrauch
-    netzeinspeisung = data.grid_sell.json().get('value',0) - netzeinspeisung
-    netzbezug = data.grid_buy.json().get('value',0) - netzbezug
-    save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug)
-    save_old_data()

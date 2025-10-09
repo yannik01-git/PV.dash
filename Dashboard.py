@@ -3,6 +3,9 @@ from streamlit_autorefresh import st_autorefresh
 # https://docs.streamlit.io/develop/api-reference 
 # "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 from All import data_collector as data
+from All import data_saver_20_min as saver1
+from All import data_saver_1_hour as saver2
+from All import data_saver_day as saver3
 from datetime import datetime
 import pandas as pd
 
@@ -21,6 +24,12 @@ if right.button("AP-Dashboard", width="stretch"):
 # Daten alle 5 Sekunden aktualisieren
 st_autorefresh(interval=5 * 1000, key="datarefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
+
+# Daten speichern
+saver1.save_20min()
+saver2.save_1hour()
+saver3.save_day()
+
 
 left, middle, right = st.columns(3)
 prod_matrix = pd.DataFrame({
