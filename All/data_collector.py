@@ -1,6 +1,7 @@
 import requests
 from pages import Settings
 from streamlit_autorefresh import st_autorefresh
+import streamlit as st
 
 # Daten alle 5 Sekunden aktualisieren
 st_autorefresh(interval=5 * 1000, key="datarefresh")
@@ -94,7 +95,7 @@ try:
     garage_ap.raise_for_status()
 
     # Leistungsgrenze setzen
-    url = 'http://192.168.188.63:8050/setMaxPower?p=600'
+    url = 'http://192.168.188.63:8050/setMaxPower?p={power}'
     set_power_garage = session.get(url)
     set_power_garage.raise_for_status()
 
@@ -132,7 +133,7 @@ try:
     spielvilla_ap.raise_for_status()
 
     # Leistungsgrenze setzen
-    url = 'http://192.168.188.122:8050/setMaxPower'
+    url = 'http://192.168.188.122:8050/setMaxPower?p={power}'
     set_power_spielvilla = session.get(url)
     set_power_spielvilla.raise_for_status()
 
@@ -207,34 +208,45 @@ if spielvilla_online and garage_online:
         if  ap_produktion > 800:
             diff_produktion = ap_produktion - max_power_ap
             if garage_produktion >= spielvilla_produktion and garage_produktion != min_power_ap:
-                set_power_garage = garage_limit.json().get('maxPower', 0) - diff_produktion
+                power = garage_limit.json().get('maxPower', 0) - diff_produktion
+                set_power_garage
                 if set_power_garage < min_power_ap:
-                    set_power_garage = min_power_ap
+                    power = min_power_ap
+                    set_power_garage 
             elif garage_produktion >= spielvilla_produktion and garage_produktion == min_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
-
+                power = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla 
             elif garage_produktion < spielvilla_produktion and spielvilla_produktion != min_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
+                power = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla 
                 if set_power_spielvilla < min_power_ap:
-                    set_power_spielvilla = min_power_ap
+                    power = min_power_ap
+                    set_power_spielvilla 
             elif garage_produktion < spielvilla_produktion and spielvilla_produktion == min_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
+                power = spielvilla_limit.json().get('maxPower', 0) - diff_produktion
+                set_power_spielvilla 
 
         # AP-Regelung nach oben
         # Beide Module online
         elif ap_produktion < 750:
             diff_produktion =  max_power_ap - ap_produktion
             if garage_produktion <= spielvilla_produktion and garage_produktion != max_power_ap:
-                set_power_garage = garage_limit.json().get('maxPower', 0) + diff_produktion
+                power = garage_limit.json().get('maxPower', 0) + diff_produktion
+                set_power_garage 
                 if set_power_garage > max_power_ap:
-                    set_power_garage = max_power_ap
+                    power = max_power_ap
+                    set_power_garage 
             elif garage_produktion <= spielvilla_produktion and garage_produktion == max_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                power = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                set_power_spielvilla 
 
             elif garage_produktion > spielvilla_produktion and spielvilla_produktion != max_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                power = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                set_power_spielvilla 
                 if set_power_spielvilla > max_power_ap:
-                    set_power_spielvilla = max_power_ap
+                    power = max_power_ap
+                    set_power_spielvilla 
             elif garage_produktion > spielvilla_produktion and spielvilla_produktion == max_power_ap:
-                set_power_spielvilla = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                power = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                set_power_garage 
 

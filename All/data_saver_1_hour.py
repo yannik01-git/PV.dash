@@ -2,7 +2,6 @@ from All import data_collector as data
 import os
 from datetime import datetime, timedelta
 import csv
-import streamlit as st
 
 
 # Globale Variable für die letzte Speicherung
@@ -19,6 +18,7 @@ os.makedirs(ordner_pfad, exist_ok=True)
 heute = datetime.now().strftime("%Y_%m_%d")
 
 # Dateiname
+save_intervall = timedelta(minutes=60)
 dateiname = f"{heute}_1hour.csv"
 dateipfad = os.path.join(ordner_pfad, dateiname)
 
@@ -34,7 +34,7 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
 
     # Neue Zeile hinzufügen
     with open(dateipfad, mode='a', newline='', encoding='utf-8') as csv_datei:
-        writer = csv.writer(csv_datei)
+        writer = csv.writer(csv_datei, delimiter=';')
         writer.writerow([
             datum,
             erzeugung_fems,
@@ -44,27 +44,11 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
             netzeinspeisung,
             netzbezug
         ])
-    last_save = jetzt  # Zeitstempel aktualisieren
-    return last_save
+        last_save = jetzt  # Zeitstempel aktualisieren
+        return last_save
     print(f"Daten gespeichert in {dateipfad}")
 
 def save_old_data():
-    # Globale Variable für die letzte Speicherung
-    jetzt = datetime.now()
-    last_save = None
-
-    # Pfad zum Speicherordner
-    ordner_pfad = "Speicherung"
-
-    # Sicherstellen, dass der Ordner existiert
-    os.makedirs(ordner_pfad, exist_ok=True)
-
-    # Heutiges Datum im Format Jahr_Monat_Tag
-    heute = datetime.now().strftime("%Y_%m_%d")
-
-    # Dateiname
-    dateiname = f"{heute}_1hour.csv"
-    dateipfad = os.path.join(ordner_pfad, dateiname)
 
     if data.garage_online:
         erzeugung_garage = data.garage_ap.json().get('e1',0)+data.garage_ap.json().get('e2',0)
@@ -90,6 +74,8 @@ def save_old_data():
 
 
 def save_1hour():
+    global last_save
+    jetzt = datetime.now()
 
     # Zeitfunktion zum Speichern
     if last_save is not None and datetime.now().strftime("%Y-%m-%d %H") > last_save:
@@ -98,7 +84,7 @@ def save_1hour():
         if not os.path.exists(dateipfad):
             # Datei erstellen (mit Kopfzeile als Beispiel)
             with open(dateipfad, mode='w', newline='', encoding='utf-8') as csv_datei:
-                writer = csv.writer(csv_datei)
+                writer = csv.writer(csv_datei, delimiter=';')
                 writer.writerow([
                     "Datum",
                     "Erzeugung Fems",

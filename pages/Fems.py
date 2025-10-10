@@ -20,7 +20,7 @@ if right.button("AP-Dashboard", width="stretch"):
 # --------------------------------------------------------
 # Auto-Refresh alle 5 Sekunden
 # --------------------------------------------------------
-st_autorefresh(interval=5 * 1000, limit=None, key="auto")
+st_autorefresh(interval=5 * 1000, limit=None, key="femsrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 if data.fems_online:
@@ -31,9 +31,9 @@ if data.fems_online:
     left.metric("Ladezustand", f"{data.charging_state.json().get('value', 0)} %")
 
     if data.battery_power.json().get('value', 0) >= 0:
-        left.metric("Batteriebeladung", f"{data.battery_power.json().get('value', 0)} W")
+        left.metric("Batterieentladung", f"{data.battery_power.json().get('value', 0)} W")
     elif data.battery_power.json().get('value', 0) < 0:
-        left.metric("Batterieentladung", f"{-data.battery_power.json().get('value', 0)} W")
+        left.metric("Batteriebeladung", f"{-data.battery_power.json().get('value', 0)} W")
 
     # --------------------------------------------------------
     # Fems Erzeugung

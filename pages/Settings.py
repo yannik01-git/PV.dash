@@ -7,8 +7,6 @@ from All import data_saver_20_min as saver1
 st.set_page_config(page_title="Settings", layout="wide")
 st.title("⚙️ Einstellungen")
 
-saver1.save_20min()
-
 # Navigation
 left, middle, right = st.columns(3)
 if left.button("Fems-Dashboard", width="stretch"):
@@ -20,7 +18,7 @@ if right.button("AP-Dashboard", width="stretch"):
 
 
 # Daten alle 5 Sekunden aktualisieren
-st_autorefresh(interval=5 * 1000, key="datarefresh")
+st_autorefresh(interval=5 * 1000, key="settingsrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 regelung = st.checkbox("Regelung aktiv", value = True)

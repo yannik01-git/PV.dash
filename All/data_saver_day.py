@@ -1,14 +1,9 @@
 from All import data_collector as data
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import csv
-from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 
-st.title("📊 Automatische Datenspeicherung")
-
-# Daten alle 5 Sekunden aktualisieren
-st_autorefresh(interval=20 * 1000, key="datarefresh")
 
 # Globale Variable für die letzte Speicherung
 jetzt = datetime.now()
@@ -40,7 +35,7 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
 
     # Neue Zeile hinzufügen
     with open(dateipfad, mode='a', newline='', encoding='utf-8') as csv_datei:
-        writer = csv.writer(csv_datei)
+        writer = csv.writer(csv_datei, delimiter=';')
         writer.writerow([
             datum,
             erzeugung_fems,
@@ -50,8 +45,8 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
             netzeinspeisung,
             netzbezug
         ])
-    last_save = jetzt  # Zeitstempel aktualisieren
-    return last_save
+        last_save = jetzt  # Zeitstempel aktualisieren
+        return last_save
     print(f"Daten gespeichert in {dateipfad}")
 
 def save_old_data():
@@ -79,6 +74,8 @@ def save_old_data():
 
 
 def save_day():
+    global last_save
+    jetzt = datetime.now()
     # Zeitfunktion zum Speichern
     if last_save is not None and datetime.now().strftime("%Y_%m_%d") >= heute:
 
@@ -86,7 +83,7 @@ def save_day():
         if not os.path.exists(dateipfad):
             # Datei erstellen (mit Kopfzeile als Beispiel)
             with open(dateipfad, mode='w', newline='', encoding='utf-8') as csv_datei:
-                writer = csv.writer(csv_datei)
+                writer = csv.writer(csv_datei, delimiter=';')
                 writer.writerow([
                     "Datum",
                     "Erzeugung Fems",
