@@ -2,7 +2,6 @@ import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 # https://docs.streamlit.io/develop/api-reference 
 # "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
-
 from All import data_collector as data
 from All import data_saver_20_min as saver1
 from All import data_saver_1_hour as saver2
@@ -65,11 +64,11 @@ left, middle, right = st.columns(3)
 if Netz > 0:
     #left.button("Netzeinspeisung",width="stretch")
     #left.button(f"{-Netz} W", width="stretch")
-    left.metric("Netzeinspeisung",f"{Netz} W")
+    left.metric("Netzbezug",f"{Netz} W")
 elif Netz <= 0:
     #left.button("Netzbezug",width="stretch")
     #left.button(f"{Netz} W", width="stretch")
-    left.metric("Netzbezug",f"{-Netz} W")
+    left.metric("Netzeinspeisung",f"{-Netz} W")
 
 #right.button("Verbrauch", width="stretch")
 #right.button(f"{Haus} W", width="stretch")

@@ -126,7 +126,7 @@ except requests.exceptions.RequestException as e:
 try:
     response = requests.get('http://192.168.188.122:8050', timeout=5) # Timeout hinzufügen
     # Erfolgreiche Anfrage wird hier behandelt
-    garage_online = True
+    spielvilla_online = True
     # Leistungsdaten abfragen
     url = 'http://192.168.188.122:8050/getOutputData'
     spielvilla_ap = session.get(url)
@@ -160,15 +160,15 @@ except requests.exceptions.RequestException as e:
 # Gesamtdaten rechnen
 # --------------------------------------------------------
 if spielvilla_online and garage_online:
-    garage_produktion = garage_data.json().get('p1', 0) + garage_data.json().get('p2', 0)
-    spielvilla_produktion = spielvilla_data.json().get('p1', 0) + spielvilla_data.json().get('p2', 0)
+    garage_produktion = garage_data.get('p1', 0) + garage_data.get('p2', 0)
+    spielvilla_produktion = spielvilla_data.get('p1', 0) + spielvilla_data.get('p2', 0)
     fems_balkon = 0
-elif spielvilla_online and not garage_online:
+elif spielvilla_online and (not garage_online):
     garage_produktion = 0
-    spielvilla_produktion = spielvilla_data.json().get('p1', 0) + spielvilla_data.json().get('p2', 0)
+    spielvilla_produktion = spielvilla_data.get('p1', 0) + spielvilla_data.get('p2', 0)
     fems_balkon = 0
-elif not spielvilla_online and garage_online:
-    garage_produktion = garage_data.json().get('p1', 0) + garage_data.json().get('p2', 0)
+elif garage_online and (not spielvilla_online):
+    garage_produktion = garage_data.get('p1', 0) + garage_data.get('p2', 0)
     spielvilla_produktion = 0
     fems_balkon = 0
 else:

@@ -1,8 +1,6 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
-from All import data_collector as data
-from All import data_saver_20_min as saver1
 
 st.set_page_config(page_title="Settings", layout="wide")
 st.title("⚙️ Einstellungen")

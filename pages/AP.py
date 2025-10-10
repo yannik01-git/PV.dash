@@ -22,6 +22,7 @@ st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 # --------------------------------------------------------
 # AP-Garage anzeigen
 left, middle, right = st.columns(3)
+left.title("Garage")
 if data.garage_online:
     # Erfolgreiche Anfrage wird hier behandelt
     left.metric("PV-Leistung-1", f"{data.garage_data.get('p1', 0.0)} W")
@@ -29,13 +30,13 @@ if data.garage_online:
     left.metric("Garage-Leistungsgrenze", f"{data.garage_limit.get('maxPower', 0)} W")
 else:
     # Hier können Sie auch Fehler wie Timeout behandeln
-    left.button("Garage", width="stretch")
     left.metric("Status", "❓ Keine Verbindung")
 
 
 
 # --------------------------------------------------------
 # AP-Spielvilla anzeigen
+right.title("Spielvilla")
 if data.spielvilla_online:
     # Erfolgreiche Anfrage wird hier behandelt
     right.metric("PV-Leistung-1", f"{data.spielvilla_data.json().get('p1', 0)} W")
@@ -43,5 +44,10 @@ if data.spielvilla_online:
     right.metric("Spielvilla-Leistungsgrenze", f"{data.spielvilla_limit.json().get('maxPower', 0)} W")
 else:
     # Hier können Sie auch Fehler wie Timeout behandeln
-    right.button("Spielvilla", width="stretch")
     right.metric("Status", "❓ Keine Verbindung")
+
+
+# -------------------------------------------------------
+# Gesamterzeugung anzeigen
+left, middle, right = st.columns(3)
+middle.metric("Gersamterzeugung AP", f"{data.ap_produktion} W")

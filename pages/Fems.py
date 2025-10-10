@@ -42,9 +42,9 @@ if data.fems_online:
     # --------------------------------------------------------
     # Fems Netzbezug/Netzeinspeisung anzeigen
     if data.grid_power.json().get('value', 0) >= 0:
-        left.metric("Netzeinspeisung", f"{data.grid_power.json().get('value', 0)} W")
+        left.metric("Netzbezug", f"{data.grid_power.json().get('value', 0)} W")
     elif data.grid_power.json().get('value', 0) < 0:
-        left.metric("Netzbezug", f"{-data.grid_power.json().get('value', 0)} W")
+        left.metric("Netzeinspesung", f"{-data.grid_power.json().get('value', 0)} W")
 
     # --------------------------------------------------------
     # FEMS Verbrauch anzeigen
