@@ -5,7 +5,7 @@ from streamlit_autorefresh import st_autorefresh
 import csv
 
 # Daten alle 20 Sekunden aktualisieren
-st_autorefresh(interval=20 * 1000, key="dashrefresh")
+st_autorefresh(interval=20 * 1000, key="save20refresh")
 #st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 # Globale Variable für die letzte Speicherung
@@ -37,11 +37,11 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
 
 def save_old_data():
     if data.garage_online:
-        erzeugung_garage = data.garage_ap.json().get('e1', 0) + data.garage_ap.json().get('e2', 0)
+        erzeugung_garage = data.garage_data.get('e1', 0) + data.garage_data.get('e2', 0)
     else:
         erzeugung_garage = 0
     if data.spielvilla_online:
-        erzeugung_spielvilla = data.spielvilla_ap.json().get('e1', 0) + data.spielvilla_ap.json().get('e2', 0)
+        erzeugung_spielvilla = data.spielvilla_data.get('e1', 0) + data.spielvilla_data.get('e2', 0)
     else:
         erzeugung_spielvilla = 0
     if data.fems_online:
@@ -75,20 +75,18 @@ def save_20min():
                     "Netzbezug"
                 ])
             print(f"Neue CSV-Datei erstellt: {dateipfad}")
-        elif last_save is None:
-            last_save = jetzt
-            save_old_data()
         else:
             print(f"Datei existiert bereits: {dateipfad}")
+        
         erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug = save_old_data()
 
         if erzeugung_garage != 0 and data.garage_online:
-            erzeugung_garage = data.garage_ap.json().get('e1',0)+data.garage_ap.json().get('e2',0) - erzeugung_garage
+            erzeugung_garage = data.garage_data.get('e1',0)+data.garage_data.get('e2',0) - erzeugung_garage
         else:
             erzeugung_garage = 0
         
         if erzeugung_spielvilla != 0 and data.spielvilla_online:
-            erzeugung_spielvilla = data.spielvilla_ap.json().get('e1',0) + data.spielvilla_ap.json().get('e2',0) - erzeugung_spielvilla
+            erzeugung_spielvilla = data.spielvilla_data.get('e1',0) + data.spielvilla_data.get('e2',0) - erzeugung_spielvilla
         else:
             erzeugung_spielvilla = 0
 
@@ -112,4 +110,7 @@ def save_20min():
         else:
             netzbezug = 0
         save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug)
+        save_old_data()
+    elif last_save is None:
+        last_save = jetzt
         save_old_data()

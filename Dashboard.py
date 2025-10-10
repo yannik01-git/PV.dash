@@ -3,9 +3,9 @@ from streamlit_autorefresh import st_autorefresh
 # https://docs.streamlit.io/develop/api-reference 
 # "Let's start building! For help and inspiration, head over to [docs.streamlit.io](https://docs.streamlit.io/)."
 from All import data_collector as data
-from All import data_saver_20_min as saver1
-from All import data_saver_1_hour as saver2
-from All import data_saver_day as saver3
+#from All import data_saver_20_min as saver1
+#from All import data_saver_1_hour as saver2
+#from All import data_saver_day as saver3
 from datetime import datetime
 import pandas as pd
 
@@ -26,9 +26,14 @@ st_autorefresh(interval=5 * 1000, key="dashrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 # Daten speichern
+from All import data_saver_20_min as saver1
+from All import data_saver_1_hour as saver2
+from All import data_saver_day as saver3
 saver1.save_20min()
 saver2.save_1hour()
 saver3.save_day()
+
+data.refreshState()
 
 if data.fems_online:
     Fems = data.production_power.json().get('value', 0)

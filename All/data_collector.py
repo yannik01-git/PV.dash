@@ -36,7 +36,7 @@ try:
     grid_power.raise_for_status()
 
     # Batterieleistung abfragen
-    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/EssActivePower'
+    url = 'http://Gast:user@192.168.188.66:80/rest/channel/_sum/EssDischargePower'
     battery_power = session.get(url)
     battery_power.raise_for_status()
 
@@ -156,6 +156,7 @@ except requests.exceptions.RequestException as e:
 
 
 
+
 # --------------------------------------------------------
 # Gesamtdaten rechnen
 # --------------------------------------------------------
@@ -179,7 +180,7 @@ else:
 ap_produktion = garage_produktion + spielvilla_produktion
 
 if  fems_online and consumption.json().get('value',0) >= 0:
-    haus_verbrauch = consumption.json().get('value', 0) + ap_produktion
+    haus_verbrauch = consumption.json().get('value', 0) + abs(ap_produktion)
     pv_produktion = ap_produktion + production_power.json().get('value', 0)
 
 elif fems_online and consumption.json().get('value',0) < 0:
@@ -205,7 +206,9 @@ max_power_ap = 800
 # Beide Module online
 if spielvilla_online and garage_online:
     if Settings.regelung:
-        if  ap_produktion > 800:
+        if garage_limit.get('maxPower',0) == garage_limit.get('maxPower',0) == max_power_ap:
+            max_power_ap = max_power_ap
+        elif  ap_produktion > 800:
             diff_produktion = ap_produktion - max_power_ap
             if garage_produktion >= spielvilla_produktion and garage_produktion != min_power_ap:
                 power = garage_limit.json().get('maxPower', 0) - diff_produktion
@@ -241,7 +244,7 @@ if spielvilla_online and garage_online:
                 set_power_spielvilla 
 
             elif garage_produktion > spielvilla_produktion and spielvilla_produktion != max_power_ap:
-                power = spielvilla_limit.json().get('maxPower', 0) + diff_produktion
+                power = spielvilla_limit.get('maxPower', 0) + diff_produktion
                 set_power_spielvilla 
                 if set_power_spielvilla > max_power_ap:
                     power = max_power_ap

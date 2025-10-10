@@ -1,7 +1,6 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 from All import data_collector as data
-import requests
 from datetime import datetime
 
 st.set_page_config(page_title="AP Monitor", layout="wide")
@@ -39,9 +38,9 @@ else:
 right.title("Spielvilla")
 if data.spielvilla_online:
     # Erfolgreiche Anfrage wird hier behandelt
-    right.metric("PV-Leistung-1", f"{data.spielvilla_data.json().get('p1', 0)} W")
-    right.metric("PV-Leistung-2", f"{data.spielvilla_data.json().get('p2', 0)} W")
-    right.metric("Spielvilla-Leistungsgrenze", f"{data.spielvilla_limit.json().get('maxPower', 0)} W")
+    right.metric("PV-Leistung-1", f"{data.spielvilla_data.get('p1', 0)} W")
+    right.metric("PV-Leistung-2", f"{data.spielvilla_data.get('p2', 0)} W")
+    right.metric("Spielvilla-Leistungsgrenze", f"{data.spielvilla_limit.get('maxPower', 0)} W")
 else:
     # Hier können Sie auch Fehler wie Timeout behandeln
     right.metric("Status", "❓ Keine Verbindung")
@@ -50,4 +49,4 @@ else:
 # -------------------------------------------------------
 # Gesamterzeugung anzeigen
 left, middle, right = st.columns(3)
-middle.metric("Gersamterzeugung AP", f"{data.ap_produktion} W")
+middle.metric("Gesamterzeugung AP", f"{data.ap_produktion} W")

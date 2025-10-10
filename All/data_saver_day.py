@@ -31,6 +31,7 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
     Speichert eine neue Zeile mit Messwerten in die heutige CSV-Datei.
     Die aktuelle Uhrzeit (Datum+Zeit) wird automatisch in die erste Spalte geschrieben.
     """
+    global last_save
     datum = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Neue Zeile hinzufügen
@@ -45,9 +46,9 @@ def save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch,
             netzeinspeisung,
             netzbezug
         ])
-        last_save = jetzt  # Zeitstempel aktualisieren
-        return last_save
+    last_save = datetime.now().strftime("%Y-%m-%d")  # Zeitstempel aktualisieren
     print(f"Daten gespeichert in {dateipfad}")
+    return last_save
 
 def save_old_data():
     if data.garage_online:
@@ -76,8 +77,15 @@ def save_old_data():
 def save_day():
     global last_save
     jetzt = datetime.now()
-    # Zeitfunktion zum Speichern
-    if last_save is not None and datetime.now().strftime("%Y_%m_%d") >= heute:
+    current_day = datetime.now().strftime("%Y-%m-%d")
+    
+    # Erste Initialisierung
+    if last_save is None:
+        last_save = current_day
+        return  # Beim ersten Aufruf nicht speichern, nur initialisieren
+    
+    # Zeitfunktion zum Speichern - speichern wenn neuer Tag beginnt
+    if current_day > last_save:
 
         # Prüfen, ob die Datei existiert
         if not os.path.exists(dateipfad):
@@ -94,17 +102,31 @@ def save_day():
                     "Netzbezug"
                 ])
             print(f"Neue CSV-Datei erstellt: {dateipfad}")
-        elif last_save is None:
-            last_save = jetzt
-            save_old_data()
-        else:
-            print(f"Datei existiert bereits: {dateipfad}")
+        
+        # Alte Werte für Differenzberechnung holen
         erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug = save_old_data()
-        erzeugung_garage = data.garage_ap.json().get('e1',0)+data.garage_ap.json().get('e2',0) - erzeugung_garage
-        erzeugung_spielvilla = data.spielvilla_ap.json().get('e1',0) + data.spielvilla_ap.json().get('e2',0) - erzeugung_spielvilla
-        erzeugung_fems = data.full_production.json().get('value',0) - erzeugung_fems
-        verbrauch = data.full_consumption.json().get('value',0) + erzeugung_garage + erzeugung_fems - verbrauch
-        netzeinspeisung = data.grid_sell.json().get('value',0) - netzeinspeisung
-        netzbezug = data.grid_buy.json().get('value',0) - netzbezug
+        
+        # Aktuelle Werte holen und Differenz berechnen
+        if data.garage_online:
+            erzeugung_garage = data.garage_ap.json().get('e1',0) + data.garage_ap.json().get('e2',0) - erzeugung_garage
+        else:
+            erzeugung_garage = 0
+            
+        if data.spielvilla_online:
+            erzeugung_spielvilla = data.spielvilla_ap.json().get('e1',0) + data.spielvilla_ap.json().get('e2',0) - erzeugung_spielvilla
+        else:
+            erzeugung_spielvilla = 0
+            
+        if data.fems_online:
+            erzeugung_fems = data.full_production.json().get('value',0) - erzeugung_fems
+            verbrauch = data.full_consumption.json().get('value',0) - verbrauch
+            netzeinspeisung = data.grid_sell.json().get('value',0) - netzeinspeisung
+            netzbezug = data.grid_buy.json().get('value',0) - netzbezug
+        else:
+            erzeugung_fems = 0
+            verbrauch = 0
+            netzeinspeisung = 0
+            netzbezug = 0
+            
+        # Daten speichern
         save_data(erzeugung_fems, erzeugung_garage, erzeugung_spielvilla, verbrauch, netzeinspeisung, netzbezug)
-        save_old_data()
