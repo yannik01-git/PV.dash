@@ -3,7 +3,10 @@ import os
 from datetime import datetime
 import csv
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 
+# Daten alle 10 Sekunden aktualisieren
+st_autorefresh(interval=10 * 1000, key="savedayrefresh")
 
 # Globale Variable für die letzte Speicherung
 jetzt = datetime.now()
@@ -94,12 +97,12 @@ def save_day():
                 writer = csv.writer(csv_datei, delimiter=';')
                 writer.writerow([
                     "Datum",
-                    "Erzeugung Fems",
-                    "Erzeugung Garage",
-                    "Erzeugung Spielvilla",
-                    "Verbrauch",
-                    "Netzeinspeisung",
-                    "Netzbezug"
+                    "Erzeugung Fems [Wh]",
+                    "Erzeugung Garage [kWh]",
+                    "Erzeugung Spielvilla [kWh]",
+                    "Verbrauch [Wh]",
+                    "Netzeinspeisung [Wh]",
+                    "Netzbezug [Wh]"
                 ])
             print(f"Neue CSV-Datei erstellt: {dateipfad}")
         

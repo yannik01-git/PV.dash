@@ -15,9 +15,15 @@ if right.button("AP-Dashboard", width="stretch"):
     st.switch_page("pages/AP.py")
 
 
-# Daten alle 5 Sekunden aktualisieren
-st_autorefresh(interval=5 * 1000, key="settingsrefresh")
+# Daten alle 10 Sekunden aktualisieren
+st_autorefresh(interval=10 * 1000, key="settingsrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
-regelung = st.checkbox("Regelung aktiv", value = True)
+from All import data_collector as data
+data.refreshState()
 
+regelung = st.checkbox("Regelung aktiv", value = True)
+data.setRegelung(regelung)
+
+if st.button("reduzierung"):
+    data.setGaragePower(300)

@@ -1,5 +1,7 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import pandas as pd
+from datetime import datetime
 
 st.set_page_config(page_title="PV Dashboard BSP", layout="wide")
 st.title("PV-Dashboard-BSP")
@@ -12,7 +14,9 @@ if middle.button("Main-Dashboard", width="stretch"):
 if right.button("AP-Dashboard", width="stretch"):
     st.switch_page("pages/AP.py")
 
-
+# Daten alle 10 Sekunden aktualisieren
+st_autorefresh(interval=10 * 1000, key="bsprefresh")
+st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 left, middle, right = st.columns(3)
 prod_matrix = pd.DataFrame({

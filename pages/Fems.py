@@ -18,10 +18,12 @@ if right.button("AP-Dashboard", width="stretch"):
     st.switch_page("pages/AP.py")
 
 # --------------------------------------------------------
-# Auto-Refresh alle 5 Sekunden
+# Auto-Refresh alle 10 Sekunden
 # --------------------------------------------------------
-st_autorefresh(interval=5 * 1000, limit=None, key="femsrefresh")
+st_autorefresh(interval=10 * 1000, limit=None, key="femsrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
+
+data.refreshState()
 
 if data.fems_online:
     left, right = st.columns(2)

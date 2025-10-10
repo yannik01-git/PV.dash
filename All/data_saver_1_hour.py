@@ -2,7 +2,10 @@ from All import data_collector as data
 import os
 from datetime import datetime, timedelta
 import csv
+from streamlit_autorefresh import st_autorefresh
 
+# Daten alle 10 Sekunden aktualisieren
+st_autorefresh(interval=10 * 1000, key="save1hourrefresh")
 
 # Globale Variable für die letzte Speicherung
 jetzt = datetime.now()
@@ -82,6 +85,7 @@ def save_1hour():
     # Erste Initialisierung
     if last_save is None:
         last_save = current_hour
+        save_old_data()
         return  # Beim ersten Aufruf nicht speichern, nur initialisieren
     
     # Zeitfunktion zum Speichern - speichern wenn neue Stunde beginnt
@@ -94,12 +98,12 @@ def save_1hour():
                 writer = csv.writer(csv_datei, delimiter=';')
                 writer.writerow([
                     "Datum",
-                    "Erzeugung Fems",
-                    "Erzeugung Garage",
-                    "Erzeugung Spielvilla",
-                    "Verbrauch",
-                    "Netzeinspeisung",
-                    "Netzbezug"
+                    "Erzeugung Fems [Wh]",
+                    "Erzeugung Garage [kWh]",
+                    "Erzeugung Spielvilla [kWh]",
+                    "Verbrauch [Wh]",
+                    "Netzeinspeisung [Wh]",
+                    "Netzbezug [Wh]"
                 ])
             print(f"Neue CSV-Datei erstellt: {dateipfad}")
         

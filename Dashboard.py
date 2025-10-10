@@ -21,8 +21,8 @@ if right.button("AP-Dashboard", width="stretch"):
     st.switch_page("pages/AP.py")
 
 
-# Daten alle 5 Sekunden aktualisieren
-st_autorefresh(interval=5 * 1000, key="dashrefresh")
+# Daten alle 10 Sekunden aktualisieren
+st_autorefresh(interval=10 * 1000, key="dashrefresh")
 st.write(f"🔄 Letzte Aktualisierung: {datetime.now().strftime('%H:%M:%S')}")
 
 # Daten speichern
